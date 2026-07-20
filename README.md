@@ -133,7 +133,7 @@ SCM Pro is a comprehensive web-based ERP system built on modern technologies inc
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         PRESENTATION LAYER                                  │
-│                      React.js Application                          │
+│                      React.js Application                                   │
 │                    Responsive Web Interface                                 │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -619,7 +619,7 @@ post:123:vendor:performance
   - Bit 2: Vendor C (Delivered On-Time) → Set to 1
   - Bit 3: Vendor D (Not Delivered) → Set to 0
 
-BITCOUNT post:123:vendor:performance → Returns 2 (On-Time deliveries)
+BITCOUNT post:123:vendor:performance → Returns 2
 ```
 
 **Manager View:** Senior Manager can see performance of all vendors on a specific procurement post using Bitmap analytics.
