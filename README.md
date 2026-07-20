@@ -1572,191 +1572,429 @@ csv: 10MB
 
 ## 11. Project Structure
 
-### 11.1 Backend Directory Structure (14 Apps + Core)
+### 11.1 Two Services Structure ( Backend( service-1),FrontEnd(service-2) )
 
 ```
-backend/
-├── manage.py
-├── requirements.txt
-├── .env
-├── Dockerfile
-├── docker-compose.yml
+~/scm/scm_project/
 │
-├── scm_pro/                                    # Project Configuration
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   ├── asgi.py
-│   ├── celery.py
-│   └── celery_beat.py
+├── backend/                                    #  SERVICE 1: BACKEND (Django API)
+│   ├── apps/                                   # All Django Apps
+│   │   ├── accounts/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # User Model
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py                        # Login, Register, Profile
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   └── utils.py
+│   │   ├── managers/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Manager Profile
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py                        # CRUD, Freeze Managers
+│   │   │   ├── urls.py
+│   │   │   └── permissions.py
+│   │   ├── vendors/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # VendorExtra (NID, TIN, License)
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py                        # CRUD, Approve, Reject
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── signals.py
+│   │   │   └── file_upload.py                  # Logo, NID, TIN, License
+│   │   ├── categories/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Category
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   └── permissions.py
+│   │   ├── products/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Product (SKU, Category)
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   └── file_upload.py                  # Product Images
+│   │   ├── inventory/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Inventory (Stock, Min, Max)
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   └── permissions.py
+│   │   ├── procurement/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # ProcurementPost
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── signals.py                      # Email + Redis Pub/Sub
+│   │   │   └── file_upload.py                  # Attachments
+│   │   ├── bids/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Bid (Unit Price, Status)
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── redis_service.py                # ZSET Ranking
+│   │   │   └── file_upload.py                  # Samples, Documents
+│   │   ├── orders/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # PurchaseOrder
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── signals.py                      # Auto-close Procurement
+│   │   │   ├── file_upload.py
+│   │   │   └── pdf_generator.py                # PO PDF
+│   │   ├── deliveries/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # Delivery
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── signals.py                      # Auto-update Inventory
+│   │   │   └── utils.py
+│   │   ├── chat/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # ChatMessage
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── consumers.py                    # WebSocket
+│   │   │   ├── routing.py
+│   │   │   └── file_upload.py
+│   │   ├── emails/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # EmailLog
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   ├── tasks.py                        # Celery Email
+│   │   │   └── templates.py                    # Email Templates
+│   │   ├── sessions/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py                       # UserSession (Tokens, Blacklist)
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   ├── urls.py
+│   │   │   ├── permissions.py
+│   │   │   └── middleware.py
+│   │   └── logging/
+│   │       ├── __init__.py
+│   │       ├── admin.py
+│   │       ├── apps.py
+│   │       ├── models.py                       # AuditLog, ActivityLog, ExceptionLog
+│   │       ├── serializers.py
+│   │       ├── views.py                        # View, Filter, Export Logs
+│   │       ├── urls.py
+│   │       ├── permissions.py
+│   │       ├── middleware.py                   # Auto-log API Requests
+│   │       └── handlers.py                     # Exception Handlers
+│   │
+│   ├── core/                                   # Shared Core Utilities
+│   │   ├── __init__.py
+│   │   ├── constants.py                        # Global Constants
+│   │   ├── exceptions.py                       # Custom Exceptions
+│   │   ├── validators.py                       # Validators
+│   │   ├── pagination.py                       # Custom Pagination
+│   │   ├── permissions.py                      # Global Permissions
+│   │   ├── middleware.py                       # Global Middleware
+│   │   ├── redis_client.py                     # Redis Connection
+│   │   ├── email_service.py                    # Email Service
+│   │   ├── pdf_export.py                       # PDF/Excel/CSV Export
+│   │   ├── file_upload.py                      # File Upload Handler
+│   │   └── utils.py                            # Common Utilities
+│   │
+│   ├── scm_pro/                                # Django Project Config
+│   │   ├── __init__.py
+│   │   ├── settings.py                         #  API ONLY
+│   │   ├── urls.py                             #  ONLY API Endpoints
+│   │   ├── wsgi.py
+│   │   ├── asgi.py
+│   │   ├── celery.py
+│   │   └── celery_beat.py
+│   │
+│   ├── media/                                  # User Uploaded Files
+│   │   ├── vendors/
+│   │   │   └── {vendor_id}/
+│   │   │       ├── logo/
+│   │   │       ├── nid/
+│   │   │       ├── tin/
+│   │   │       ├── trade_license/
+│   │   │       └── profile/
+│   │   ├── products/
+│   │   │   └── {product_id}/
+│   │   │       └── images/
+│   │   ├── procurement/
+│   │   │   └── {post_id}/
+│   │   │       ├── attachments/
+│   │   │       └── samples/
+│   │   ├── bids/
+│   │   │   └── {bid_id}/
+│   │   │       ├── samples/
+│   │   │       └── documents/
+│   │   ├── purchase_orders/
+│   │   │   └── {order_id}/
+│   │   ├── chat/
+│   │   │   └── {chat_id}/
+│   │   │       └── attachments/
+│   │   └── temp/
+│   │       └── {session_id}/
+│   │
+│   ├── tests/                                  # Test Files
+│   │   ├── __init__.py
+│   │   ├── test_accounts.py
+│   │   ├── test_vendors.py
+│   │   ├── test_products.py
+│   │   ├── test_procurement.py
+│   │   ├── test_bids.py
+│   │   ├── test_orders.py
+│   │   ├── test_deliveries.py
+│   │   └── test_logging.py
+│   │
+│   ├── fixtures/                               # Initial Data
+│   │   ├── categories.json
+│   │   ├── users.json
+│   │   └── vendors.json
+│   │
+│   ├── logs/                                   # Application Logs
+│   │   ├── app.log
+│   │   ├── celery.log
+│   │   ├── django.log
+│   │   ├── audit.log
+│   │   └── exception.log
+│   │
+│   ├── scripts/                                # Backend Scripts
+│   │   ├── backup.py
+│   │   ├── cleanup.py
+│   │   ├── seed.py
+│   │   └── migration_helper.py
+│   │
+│   ├── manage.py                               # Django Management
+│   ├── requirements.txt                        # Python Dependencies
+│   ├── .env                                    # Backend Environment Variables
+│   ├── .env.example                            # Environment Template
+│   ├── Dockerfile                              # Backend Docker Image
+│   ├── entrypoint.sh                           # Docker Entrypoint
+│   └── setup.sh                                # Setup Script
 │
-├── apps/                                       # All Django Apps (14 Apps)
-│   ├── accounts/                               # App 1: User Authentication
-│   │   ├── models.py                           # User (AbstractUser with role)
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Login, Logout, Register, Profile
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   └── authentication.py
-│   │
-│   ├── managers/                               # App 2: Manager Management
-│   │   ├── models.py                           # Manager profile
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Create, Update, Delete, Freeze
-│   │   ├── urls.py
-│   │   └── permissions.py
-│   │
-│   ├── vendors/                                # App 3: Vendor Management
-│   │   ├── models.py                           # VendorExtra
-│   │   ├── serializers.py
-│   │   ├── views.py                            # CRUD, Approve, Reject, Freeze
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── signals.py
-│   │   └── file_upload.py
-│   │
-│   ├── categories/                             # App 4: Category Management
-│   │   ├── models.py                           # Category
-│   │   ├── serializers.py
-│   │   ├── views.py                            # CRUD, List, Search
-│   │   ├── urls.py
-│   │   └── permissions.py
-│   │
-│   ├── products/                               # App 5: Product Management
-│   │   ├── models.py                           # Product
-│   │   ├── serializers.py
-│   │   ├── views.py                            # CRUD, Search, Filter
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   └── file_upload.py
-│   │
-│   ├── inventory/                              # App 6: Inventory Management
-│   │   ├── models.py                           # Inventory
-│   │   ├── serializers.py
-│   │   ├── views.py                            # View, Add, Update Stock
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   └── signals.py
-│   │
-│   ├── procurement/                            # App 7: Procurement Management
-│   │   ├── models.py                           # ProcurementPost
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Create, Edit, Delete, Publish, Close
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── signals.py                          # Auto-send email + Redis Pub/Sub
-│   │   └── file_upload.py
-│   │
-│   ├── bids/                                   # App 8: Bid Management
-│   │   ├── models.py                           # Bid
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Submit, Review, Revision
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── redis_service.py                    # ZSET ranking
-│   │   └── file_upload.py
-│   │
-│   ├── orders/                                 # App 9: Purchase Order Management
-│   │   ├── models.py                           # PurchaseOrder
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Generate, PDF, Email, Track
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── signals.py
-│   │   └── pdf_generator.py
-│   │
-│   ├── deliveries/                             # App 10: Delivery Management
-│   │   ├── models.py                           # Delivery
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Receive, Update Status
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   └── signals.py                          # Auto-update inventory
-│   │
-│   ├── chat/                                   # App 11: Chat Communication
-│   │   ├── models.py                           # ChatMessage
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Send, Receive, History
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── consumers.py                        # WebSocket
-│   │   └── routing.py
-│   │
-│   ├── emails/                                 # App 12: Email Management
-│   │   ├── models.py                           # EmailLog
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Send, History
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   ├── tasks.py                            # Celery email tasks
-│   │   └── templates.py                        # Email templates
-│   │
-│   ├── sessions/                               # App 13: Session Management
-│   │   ├── models.py                           # UserSession
-│   │   ├── serializers.py
-│   │   ├── views.py                            # Active sessions, Force logout
-│   │   ├── urls.py
-│   │   ├── permissions.py
-│   │   └── middleware.py
-│   │
-│   └── logging/                                # App 14: Combined Logging
-│       ├── models.py                           # BaseLog, AuditLog, ActivityLog, ExceptionLog
-│       ├── serializers.py
-│       ├── views.py                            # View, Search, Filter, Export
-│       ├── urls.py
-│       ├── permissions.py
-│       ├── middleware.py                       # Auto-log API requests
-│       └── handlers.py                         # Exception handlers
 │
-├── core/                                       # Shared Core Utilities
-│   ├── constants.py                            # Global constants
-│   ├── exceptions.py                           # Custom exceptions
-│   ├── validators.py                           # Common validators
-│   ├── pagination.py                           # Custom pagination
-│   ├── permissions.py                          # Global permissions
-│   ├── middleware.py                           # Global middleware
-│   ├── redis_client.py                         # Redis connection wrapper
-│   ├── email_service.py                        # Email utilities
-│   ├── pdf_export.py                           # PDF, Excel, CSV export
-│   ├── file_upload.py                          # File upload handling
-│   └── utils.py                                # Common utilities
 │
-├── templates/                                  # Email Templates
-│   └── emails/
-│       ├── vendor_approval.html
-│       ├── vendor_rejection.html
-│       ├── bid_revision.html
-│       └── purchase_order.html
 │
-├── media/                                      # User uploaded files
-│   ├── vendors/
-│   ├── products/
-│   ├── procurement/
-│   ├── bids/
-│   ├── purchase_orders/
-│   ├── chat/
-│   └── temp/
 │
-├── tests/                                      # Test files
-│   ├── test_accounts.py
-│   ├── test_vendors.py
-│   ├── test_products.py
-│   ├── test_procurement.py
-│   ├── test_bids.py
-│   ├── test_orders.py
-│   └── test_deliveries.py
+├── frontend/                                   #  SERVICE 2: FRONTEND (React)
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   │
+│   ├── src/
+│   │   ├── api/                                # API Integration
+│   │   │   ├── index.js                        # Axios Config
+│   │   │   ├── endpoints.js                    # API Endpoints
+│   │   │   ├── auth.js
+│   │   │   ├── vendors.js
+│   │   │   ├── products.js
+│   │   │   ├── procurement.js
+│   │   │   ├── bids.js
+│   │   │   ├── orders.js
+│   │   │   └── deliveries.js
+│   │   │
+│   │   ├── components/                         # UI Components
+│   │   │   ├── common/
+│   │   │   │   ├── Header.js
+│   │   │   │   ├── Sidebar.js
+│   │   │   │   ├── Footer.js
+│   │   │   │   ├── Loading.js
+│   │   │   │   ├── Modal.js
+│   │   │   │   ├── Alert.js
+│   │   │   │   ├── Card.js
+│   │   │   │   ├── Table.js
+│   │   │   │   ├── Pagination.js
+│   │   │   │   ├── SearchBar.js
+│   │   │   │   ├── FilterBar.js
+│   │   │   │   ├── ExportButtons.js
+│   │   │   │   └── FileUpload.js
+│   │   │   ├── auth/
+│   │   │   │   ├── Login.js
+│   │   │   │   ├── Register.js
+│   │   │   │   ├── ForgotPassword.js
+│   │   │   │   └── ResetPassword.js
+│   │   │   ├── dashboard/
+│   │   │   │   ├── Dashboard.js
+│   │   │   │   ├── SummaryCards.js
+│   │   │   │   ├── ProcurementChart.js
+│   │   │   │   ├── VendorChart.js
+│   │   │   │   └── ActivityFeed.js
+│   │   │   ├── vendors/
+│   │   │   │   ├── VendorList.js
+│   │   │   │   ├── VendorDetail.js
+│   │   │   │   ├── VendorCreate.js
+│   │   │   │   ├── VendorEdit.js
+│   │   │   │   ├── VendorApproval.js
+│   │   │   │   └── VendorPerformance.js
+│   │   │   ├── products/
+│   │   │   │   ├── ProductList.js
+│   │   │   │   ├── ProductDetail.js
+│   │   │   │   ├── ProductCreate.js
+│   │   │   │   └── ProductEdit.js
+│   │   │   ├── inventory/
+│   │   │   │   ├── InventoryList.js
+│   │   │   │   ├── InventoryDetail.js
+│   │   │   │   └── StockUpdate.js
+│   │   │   ├── procurement/
+│   │   │   │   ├── ProcurementList.js
+│   │   │   │   ├── ProcurementDetail.js
+│   │   │   │   ├── ProcurementCreate.js
+│   │   │   │   ├── ProcurementEdit.js
+│   │   │   │   └── ProcurementPerformance.js
+│   │   │   ├── bids/
+│   │   │   │   ├── BidList.js
+│   │   │   │   ├── BidDetail.js
+│   │   │   │   ├── BidSubmit.js
+│   │   │   │   ├── BidRevision.js
+│   │   │   │   └── BidComparison.js
+│   │   │   ├── orders/
+│   │   │   │   ├── OrderList.js
+│   │   │   │   ├── OrderDetail.js
+│   │   │   │   └── OrderPDF.js
+│   │   │   ├── deliveries/
+│   │   │   │   ├── DeliveryList.js
+│   │   │   │   ├── DeliveryDetail.js
+│   │   │   │   └── DeliveryReceive.js
+│   │   │   ├── chat/
+│   │   │   │   ├── ChatList.js
+│   │   │   │   ├── ChatRoom.js
+│   │   │   │   └── MessageInput.js
+│   │   │   ├── logs/
+│   │   │   │   ├── LogList.js
+│   │   │   │   ├── AuditLog.js
+│   │   │   │   ├── ActivityLog.js
+│   │   │   │   └── ExceptionLog.js
+│   │   │   └── managers/
+│   │   │       ├── ManagerList.js
+│   │   │       ├── ManagerCreate.js
+│   │   │       └── ManagerEdit.js
+│   │   │
+│   │   ├── pages/                              # Pages
+│   │   │   ├── HomePage.js
+│   │   │   ├── LoginPage.js
+│   │   │   ├── DashboardPage.js
+│   │   │   ├── VendorPage.js
+│   │   │   ├── ProductPage.js
+│   │   │   ├── InventoryPage.js
+│   │   │   ├── ProcurementPage.js
+│   │   │   ├── BidPage.js
+│   │   │   ├── OrderPage.js
+│   │   │   ├── DeliveryPage.js
+│   │   │   ├── ChatPage.js
+│   │   │   └── SettingsPage.js
+│   │   │
+│   │   ├── layouts/                             # Layouts
+│   │   │   ├── MainLayout.js
+│   │   │   ├── AuthLayout.js
+│   │   │   └── GuestLayout.js
+│   │   │
+│   │   ├── store/                               # Redux State Management
+│   │   │   ├── index.js
+│   │   │   └── slices/
+│   │   │       ├── authSlice.js
+│   │   │       ├── vendorSlice.js
+│   │   │       ├── productSlice.js
+│   │   │       ├── procurementSlice.js
+│   │   │       ├── bidSlice.js
+│   │   │       ├── orderSlice.js
+│   │   │       └── deliverySlice.js
+│   │   │
+│   │   ├── hooks/                               # Custom Hooks
+│   │   │   ├── useAuth.js
+│   │   │   ├── useApi.js
+│   │   │   ├── useWebSocket.js
+│   │   │   ├── useExport.js
+│   │   │   └── useFilter.js
+│   │   │
+│   │   ├── utils/                               # Utilities
+│   │   │   ├── helpers.js
+│   │   │   ├── validators.js
+│   │   │   ├── formatters.js
+│   │   │   ├── constants.js
+│   │   │   ├── websocket.js
+│   │   │   └── export.js
+│   │   │
+│   │   ├── styles/                              # Global Styles
+│   │   │   ├── global.css
+│   │   │   ├── variables.css
+│   │   │   └── theme.js
+│   │   │
+│   │   ├── routes/                              # Routing
+│   │   │   ├── index.js
+│   │   │   ├── private.js
+│   │   │   └── public.js
+│   │   │
+│   │   ├── App.js
+│   │   ├── App.css
+│   │   └── index.js
+│   │
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── .env                                     # Frontend Environment Variables
+│   ├── Dockerfile                               # Frontend Docker Image
+│   └── README.md
 │
-├── fixtures/                                   # Initial data
-│   ├── categories.json
-│   ├── users.json
-│   └── vendors.json
+├── docs/                                        #Documentation (Shared)
+│   ├── SRS/
+│   │   └── SCM_Pro_SRS.pdf
+│   ├── API/
+│   │   └── api_documentation.md
+│   └── Database/
+│       └── er_diagram.png
 │
-└── logs/                                       # Application logs
-    ├── app.log
-    ├── celery.log
-    ├── audit.log
-    └── exception.log
+├── scripts/                                     #  Utility Scripts (Shared)
+│   ├── backup.sh
+│   ├── deploy.sh
+│   └── setup.sh
+│
+├── docker-compose.yml                           #  Both Services Together
+├── .gitignore                                   # Git Ignore
+├── README.md                                    # Project Documentation
+└── venv/                                        # Python Virtual Environment
 ```
 
 ---
