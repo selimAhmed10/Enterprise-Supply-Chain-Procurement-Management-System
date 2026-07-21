@@ -40,6 +40,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Third Party Apps
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
+    'django_celery_results',
+    'django_celery_beat',
+    'channels',
+    'django_extensions',
+    'debug_toolbar',
+    
+    
     'apps.accounts',
     'apps.managers',
     'apps.vendors',
