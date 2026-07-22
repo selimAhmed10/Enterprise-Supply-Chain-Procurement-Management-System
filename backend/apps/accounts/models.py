@@ -1,62 +1,81 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-import uuid
-class User(AbstractUser):
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
+import uuid 
 
-    ROLE_CHOICES=[
-        ('SUPER_ADMIN','Super Admin'),
-        ('SENIOR_MANAGER','Senior Manager'),
-        ('JUNIOR_MANAGER','Junior Manager'),
-        ('VENDOR','Vendor'),
-    ]
-    id =models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
-    email=models.EmailField(unique=True)
-    phone=models.CharField(max_length=15,unique=True)
-    role=models.CharField(max_length=20,choices=ROLE_CHOICES,default='VENDOR')
-    is_active=models.BooleanField(default=True)
-    is_frozen=models.BooleanField(default=False)
-    is_verified=models.BooleanField(default=False)
-    last_login_ip=models.GenericIPAddressField(null=True,blank=True)
-    last_login_device=models.CharField(max_length=255,null=True,blank=True)
-    profile_picture = models.ImageField(upload_to='profiles/',null=True,blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-    USERNAME_FIELD='email'
-    REQUIRED_FIELDS=['username','phone']
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ('Super Admin', 'Super Admin'),
+        ('Senior Manager', 'Senior Manager'),
+        ('Junior Manager', 'Junior Manager'),
+        ('Vendor', 'Vendor'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    email = models.EmailField(_('email address'), unique=True)
+    phone = models.CharField(max_length=15, unique=True)
+    password = models.CharField(max_length=128)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Vendor')
+    is_active = models.BooleanField(default=True)
+    is_frozen = models.BooleanField(default=False)
+    last_login = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'phone']
     
     class Meta:
-        db_table='users'
-        ordering=['-created_at']
-        indexes=[
+        db_table = 'users'  
+        indexes = [
             models.Index(fields=['email']),
             models.Index(fields=['phone']),
             models.Index(fields=['role']),
-            models.Index(fields=['is_active']),
         ]
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.email}-{self.get_role_display()}"
+        return f"{self.email} - {self.role}"
+    
+
+    @property
+    def is_super_admin(self):
+        return self.role == 'Super Admin'
+    
+    @property
+    def is_senior_manager(self):
+        return self.role == 'Senior Manager'
+    
+    @property
+    def is_junior_manager(self):
+        return self.role == 'Junior Manager'
+    
+    @property
+    def is_vendor(self):
+        return self.role == 'Vendor'
+    
+    @property
+    def is_manager(self):
+        return self.role in ['Super Admin', 'Senior Manager', 'Junior Manager']
     
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
     
-    @property
-    def is_super_admin(self):
-        return self.role=='SUPER_ADMIN'
+    def freeze(self):
+        self.is_frozen = True
+        self.save(update_fields=['is_frozen'])
     
-    @property
-    def is_senior_manager(self):
-        return self.role=='SENIOR_MANAGER'
+    def unfreeze(self):
+        self.is_frozen = False
+        self.save(update_fields=['is_frozen'])
     
-    @property
-    def is_junior_manager(self):
-        return self.role=='JUNIOR_MANAGER'
+    def activate(self):
+        self.is_active = True
+        self.save(update_fields=['is_active'])
     
-    @property
-    def is_vendor(self):
-        return self.role=='VENDOR'
-    
-    @property
-    def is_manager(self):
-        return self.role in ['SENIOR_MANAGER','JUNIOR_MANAGER']
+    def deactivate(self):
+        self.is_active = False
+        self.save(update_fields=['is_active'])
