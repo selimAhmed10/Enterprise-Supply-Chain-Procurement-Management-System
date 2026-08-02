@@ -62,3 +62,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
         return user
+
+class LoginSerializer(serializers.ModelSerializer):
+    email=serializers.EmailField(required=True)
+    password=serializers.CharField(required=True,write_only=True)
+      
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user found with this email.")
+        
+        if not user.is_active:  
+            raise serializers.ValidationError("This account is inactive.")
+        
+        if user.is_frozen:
+            raise serializers.ValidationError("This account is frozen. Please contact support.")
+        
+        user = authenticate(email=email, password=password)
+        
+        if not user:
+            raise serializers.ValidationError("Invalid password.")
+        
+        attrs['user'] = user
+        return attrs
