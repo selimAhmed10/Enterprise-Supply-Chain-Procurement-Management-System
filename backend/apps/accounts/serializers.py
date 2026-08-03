@@ -137,6 +137,60 @@ class UserListSerializer(serializers.ModelSerializer):
     
     def get_full_name(self, obj):
         return obj.full_name
+    
+class UserDetailSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'phone', 'role',
+            'first_name', 'last_name', 'full_name',
+            'is_active', 'is_frozen', 'last_login',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'last_login', 'created_at', 'updated_at']
+    
+    def get_full_name(self, obj):
+        return obj.full_name
 
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+    class Meta:
+        model = User
+        fields = [
+            'username', 'email', 'phone', 'password', 'password2',
+            'first_name', 'last_name', 'role', 'is_active'
+        ]
     
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return attrs
     
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+    
+    def validate_phone(self, value):
+        phone_number = re.sub(r'\D', '', value)
+
+        if phone_number.startswith('88'):
+            phone_number = phone_number[2:]
+
+        if len(phone_number) != 11 or not phone_number.startswith('01'):
+            raise serializers.ValidationError("Invalid phone number. Must be 11 digits and start with 01.")
+
+        if User.objects.filter(phone=phone_number).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+
+        return phone_number
+    
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        user = User.objects.create_user(**validated_data)
+        return user
