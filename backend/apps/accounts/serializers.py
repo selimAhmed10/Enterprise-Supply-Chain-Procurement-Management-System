@@ -121,3 +121,22 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         if user_qs.exists():
             raise serializers.ValidationError("This phone number is already in use.")
         return phone_number
+    
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'phone', 'role',
+            'first_name', 'last_name', 'full_name',
+            'is_active', 'is_frozen'
+        ]
+    
+    def get_full_name(self, obj):
+        return obj.full_name
+
+    
+    
