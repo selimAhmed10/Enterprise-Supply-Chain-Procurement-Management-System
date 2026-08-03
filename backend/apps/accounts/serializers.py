@@ -3,6 +3,7 @@ from .models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
+import re
 
 class UserSerializer(serializers.ModelSerializer):
     full_name=serializers.SerializerMethodField()
@@ -98,3 +99,25 @@ class ChangePasswordSerializer(serializers.Serializer):
         if attrs['new_password']!=attrs['confirm_new_password']:
             raise serializers.ValidationError({"New password didnt match"})
         return attrs
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields=['first_name','last_name','phone']
+        
+    def validate_phone(self,value):
+        phone_number=re.sub(r'\D','',value)
+        
+        if phone_number.startswith('88'):
+            phone_number=phone_number[2:]
+            
+        if len(phone_number)!=11 or not phone_number.startswith('01'):
+            raise serializers.ValidationError("Invalid phone number.Must be 11 digit and startwith 01")
+        
+        user_qs=User.objects.filter(phone=phone_number)
+        if self.instance and self.instance.id:
+            user_qs=user_qs.exclude(id=self.instance.id)            
+        if user_qs.exists():
+            raise serializers.ValidationError("This phone number is already in use.")
+        return phone_number
